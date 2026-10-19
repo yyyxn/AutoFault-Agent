@@ -9,16 +9,16 @@ AutoFault-Agent 是一个个人独立研究与工程项目，探索基于 Qwen3-
 ### 架构与流程
 
 ```mermaid
-flowchart LR
-  U[Streamlit] --> A[FastAPI]
-  A --> R[Replay Demo]
-  A --> P[Qwen ModelToolPolicy]
-  P --> H[LangGraph-compatible Harness]
-  H --> V[Completion Verifier]
-  H --> T[6 MCP-style Tools]
-  T --> D[Simulated DUT]
-  D --> H
-  H --> X[Trace / Final]
+graph LR
+  UI["Streamlit 中文界面"] --> REPLAY["CPU 本地回放"]
+  UI --> API["FastAPI 实时接口"]
+  API --> POLICY["Qwen 模型决策策略"]
+  POLICY --> HARNESS["智能体执行框架"]
+  HARNESS --> VERIFIER["完成条件验证器"]
+  HARNESS --> TOOLS["六种合成测试工具"]
+  TOOLS --> DUT["内存合成 DUT"]
+  DUT --> HARNESS
+  HARNESS --> RESULT["执行轨迹与最终结论"]
 ```
 
 Live 模式中，模型读取用户目标，自主生成工具调用，轻量 Harness 执行安全合成工具并返回 Observation，模型继续决策。公开版 Completion Verifier 面向三个公开全流程 Demo，检查六类动作与恢复后置条件并返回不含答案的有限反馈；它不会替模型选择或执行工具。原研究项目还包含按 task type 区分的完整 Contract、合法 BLOCKED 与 overcontinue 审计，这些评估逻辑没有被包装成公开 Demo 能力。
