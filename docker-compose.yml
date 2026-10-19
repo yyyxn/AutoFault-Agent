@@ -1,0 +1,20 @@
+services:
+  api:
+    build: .
+    environment:
+      AUTOFAULT_MODE: replay
+      AUTOFAULT_LIVE_ENABLED: "false"
+    ports: ["8000:8000"]
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+  ui:
+    build: .
+    command: ["streamlit","run","ui/streamlit_app.py","--server.address=0.0.0.0","--server.port=8501"]
+    environment:
+      AUTOFAULT_API_URL: http://api:8000
+    ports: ["8501:8501"]
+    depends_on: [api]
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]

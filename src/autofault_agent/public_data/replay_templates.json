@@ -1,0 +1,24 @@
+{
+  "DEMO-001":{"steps":[
+    {"label":"检索故障知识","tool":"search_fault_knowledge","arguments":{"query":"冷却液温度传感器开路","top_k":3},"latency_ms":3.2,"observation":{"success":true,"result":{"documents":[{"title":"公开合成冷却液温度传感器说明","source":"public_synthetic_demo"}]}}},
+    {"label":"获取测试用例","tool":"get_test_case","arguments":{"fault_id":"DEMO_F001"},"latency_ms":1.1,"observation":{"success":true,"result":{"test_case_id":"DEMO-001","source":"public_synthetic_demo"}}},
+    {"label":"注入故障","tool":"inject_fault","arguments":{"fault_id":"DEMO_F001"},"latency_ms":2.1,"observation":{"success":true,"result":{"state":"FAULT_INJECTED","data_source":"public_synthetic_demo"}}},
+    {"label":"读取 DTC","tool":"read_dtc","arguments":{},"latency_ms":1.8,"observation":{"success":true,"result":{"dtc":"DEMO_DTC_101","state":"DTC_ACTIVE"}}},
+    {"label":"判定测试结果","tool":"judge_test_result","arguments":{"fault_id":"DEMO_F001","dtc":"DEMO_DTC_101"},"latency_ms":1.0,"observation":{"success":true,"result":{"result":"PASS"}}},
+    {"label":"恢复故障","tool":"recover_fault","arguments":{"fault_id":"DEMO_F001"},"latency_ms":2.0,"observation":{"success":true,"result":{"state":"RECOVERED","recovered":true}}}],"final_answer":"公开合成测试完成：检测到预期 DTC，判定 PASS，DUT 已恢复。"},
+  "DEMO-002":{"steps":[
+    {"label":"检索故障知识","tool":"search_fault_knowledge","arguments":{"query":"轮速信号不匹配"},"latency_ms":3.0,"observation":{"success":true,"result":{"documents":[{"title":"公开合成轮速信号说明","source":"public_synthetic_demo"}]}}},
+    {"label":"获取测试用例","tool":"get_test_case","arguments":{"fault_id":"DEMO_F002"},"latency_ms":1.0,"observation":{"success":true,"result":{"test_case_id":"DEMO-002"}}},
+    {"label":"注入故障","tool":"inject_fault","arguments":{"fault_id":"DEMO_F002"},"latency_ms":2.0,"observation":{"success":true,"result":{"state":"FAULT_INJECTED"}}},
+    {"label":"读取 DTC","tool":"read_dtc","arguments":{},"latency_ms":1.4,"observation":{"success":true,"result":{"dtc":"DEMO_DTC_MISMATCH","state":"DTC_ACTIVE"}}},
+    {"label":"判定业务 FAIL","tool":"judge_test_result","arguments":{"fault_id":"DEMO_F002","dtc":"DEMO_DTC_MISMATCH"},"latency_ms":1.2,"observation":{"success":true,"result":{"result":"FAIL","reason":"DTC mismatch"}}},
+    {"label":"恢复故障","tool":"recover_fault","arguments":{"fault_id":"DEMO_F002"},"latency_ms":2.0,"observation":{"success":true,"result":{"state":"RECOVERED","recovered":true}}}],"final_answer":"公开合成测试完成：DTC 不匹配，正确判定业务 FAIL，DUT 已恢复。"},
+  "DEMO-003":{"steps":[
+    {"label":"检索故障知识","tool":"search_fault_knowledge","arguments":{"query":"执行器瞬态错误"},"latency_ms":2.8,"observation":{"success":true,"result":{"documents":[{"title":"公开合成执行器说明","source":"public_synthetic_demo"}]}}},
+    {"label":"获取测试用例","tool":"get_test_case","arguments":{"fault_id":"DEMO_F003"},"latency_ms":1.0,"observation":{"success":true,"result":{"test_case_id":"DEMO-003"}}},
+    {"label":"首次注入失败","tool":"inject_fault","arguments":{"fault_id":"DEMO_F003"},"latency_ms":2.4,"observation":{"success":false,"error":{"type":"RuntimeError","message":"Simulated transient tool error"}}},
+    {"label":"重试注入成功","tool":"inject_fault","arguments":{"fault_id":"DEMO_F003"},"latency_ms":2.1,"observation":{"success":true,"result":{"state":"FAULT_INJECTED"}}},
+    {"label":"读取 DTC","tool":"read_dtc","arguments":{},"latency_ms":1.3,"observation":{"success":true,"result":{"dtc":"DEMO_DTC_303","state":"DTC_ACTIVE"}}},
+    {"label":"判定测试结果","tool":"judge_test_result","arguments":{"fault_id":"DEMO_F003","dtc":"DEMO_DTC_303"},"latency_ms":1.0,"observation":{"success":true,"result":{"result":"PASS"}}},
+    {"label":"恢复故障","tool":"recover_fault","arguments":{"fault_id":"DEMO_F003"},"latency_ms":1.9,"observation":{"success":true,"result":{"state":"RECOVERED","recovered":true}}}],"final_answer":"公开合成测试完成：瞬态工具错误后重试成功，DUT 已恢复。"}
+}

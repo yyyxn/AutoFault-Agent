@@ -1,0 +1,5 @@
+[
+  {"id":"DEMO-001","title":"冷却液温度传感器开路","description":"公开合成的冷却液温度传感器电路出现开路症状。","fault_id":"DEMO_F001","component":"coolant_temperature_sensor","expected_dtc":"DEMO_DTC_101","test_case":["retrieve evidence","load synthetic test case","inject in memory","read DTC","judge result","recover"],"scenario":"normal"},
+  {"id":"DEMO-002","title":"轮速信号不匹配","description":"公开合成的轮速信号产生预设的不匹配 DTC，用于演示恢复流程。","fault_id":"DEMO_F002","component":"wheel_speed_sensor","expected_dtc":"DEMO_DTC_202","test_case":["retrieve evidence","load synthetic test case","inject in memory","read DTC","judge FAIL","recover"],"scenario":"dtc_mismatch"},
+  {"id":"DEMO-003","title":"执行器工具瞬态错误","description":"公开合成的执行器故障注入首次失败，重试后成功。","fault_id":"DEMO_F003","component":"air_flap_actuator","expected_dtc":"DEMO_DTC_303","test_case":["retrieve evidence","load synthetic test case","retry injection","read DTC","judge result","recover"],"scenario":"transient_tool_error"}
+]
