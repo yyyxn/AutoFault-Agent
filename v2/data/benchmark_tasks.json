@@ -1,0 +1,298 @@
+[
+  {
+    "task_id": "TASK_001",
+    "category": "Knowledge Retrieval",
+    "input": "请分析 门窗系统 IF_01 的开路，案例 F001，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "search_fault_knowledge"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F001",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_002",
+    "category": "Knowledge Retrieval",
+    "input": "请分析 灯光系统 IF_02 的短路，案例 F002，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "search_fault_knowledge"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F002",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_003",
+    "category": "Knowledge Retrieval",
+    "input": "请分析 空调系统 IF_03 的短地，案例 F003，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "search_fault_knowledge"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F003",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_004",
+    "category": "Knowledge Retrieval",
+    "input": "请分析 座椅系统 IF_04 的通信异常，案例 F004，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "search_fault_knowledge"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F004",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_005",
+    "category": "Test Case Retrieval",
+    "input": "请分析 车身控制 IF_05 的传感器异常，案例 F005，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "get_test_case"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F005",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_006",
+    "category": "Test Case Retrieval",
+    "input": "请分析 电源管理 IF_06 的电压异常，案例 F006，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "get_test_case"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F006",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_007",
+    "category": "Test Case Retrieval",
+    "input": "请分析 通信系统 IF_07 的执行器异常，案例 F007，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "get_test_case"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F007",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_008",
+    "category": "Test Case Retrieval",
+    "input": "请分析 门窗系统 IF_01 的信号异常，案例 F008，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "get_test_case"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F008",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_009",
+    "category": "Fault Injection",
+    "input": "请分析 灯光系统 IF_02 的超时，案例 F009，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "get_test_case",
+      "inject_fault"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F009",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_010",
+    "category": "Fault Injection",
+    "input": "请分析 空调系统 IF_03 的数据无效，案例 F010，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "get_test_case",
+      "inject_fault"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F010",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_011",
+    "category": "Fault Injection",
+    "input": "请分析 座椅系统 IF_04 的开路，案例 F011，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "get_test_case",
+      "inject_fault"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F011",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_012",
+    "category": "Fault Injection",
+    "input": "请分析 车身控制 IF_05 的短路，案例 F012，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "get_test_case",
+      "inject_fault"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F012",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_013",
+    "category": "DTC Diagnosis",
+    "input": "请分析 电源管理 IF_06 的短地，案例 F013，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "get_test_case",
+      "inject_fault",
+      "read_dtc",
+      "judge_test_result"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F013",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_014",
+    "category": "DTC Diagnosis",
+    "input": "请分析 通信系统 IF_07 的通信异常，案例 F014，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "get_test_case",
+      "inject_fault",
+      "read_dtc",
+      "judge_test_result"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F014",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_015",
+    "category": "DTC Diagnosis",
+    "input": "请分析 门窗系统 IF_01 的传感器异常，案例 F015，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "get_test_case",
+      "inject_fault",
+      "read_dtc",
+      "judge_test_result"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F015",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_016",
+    "category": "DTC Diagnosis",
+    "input": "请分析 灯光系统 IF_02 的电压异常，案例 F016，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "get_test_case",
+      "inject_fault",
+      "read_dtc",
+      "judge_test_result"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F016",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_017",
+    "category": "Multi-step Diagnosis",
+    "input": "请分析 空调系统 IF_03 的执行器异常，案例 F017，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "search_fault_knowledge",
+      "get_test_case",
+      "inject_fault",
+      "read_dtc",
+      "judge_test_result",
+      "recover_fault"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F017",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_018",
+    "category": "Multi-step Diagnosis",
+    "input": "请分析 座椅系统 IF_04 的信号异常，案例 F018，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "search_fault_knowledge",
+      "get_test_case",
+      "inject_fault",
+      "read_dtc",
+      "judge_test_result",
+      "recover_fault"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F018",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_019",
+    "category": "Multi-step Diagnosis",
+    "input": "请分析 车身控制 IF_05 的超时，案例 F019，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "search_fault_knowledge",
+      "get_test_case",
+      "inject_fault",
+      "read_dtc",
+      "judge_test_result",
+      "recover_fault"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F019",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  },
+  {
+    "task_id": "TASK_020",
+    "category": "Multi-step Diagnosis",
+    "input": "请分析 电源管理 IF_06 的数据无效，案例 F020，并按任务完成模拟诊断。",
+    "expected_tools": [
+      "search_fault_knowledge",
+      "get_test_case",
+      "inject_fault",
+      "read_dtc",
+      "judge_test_result",
+      "recover_fault"
+    ],
+    "expected_result": "PASS",
+    "expected_fault_id": "F020",
+    "success_condition": {
+      "data_source": "synthetic_demo"
+    }
+  }
+]

@@ -1,0 +1,1 @@
+{"name":"autofault-agent-mvp2","private":true,"version":"2.0.0","type":"module","scripts":{"dev":"vite --host 127.0.0.1","build":"vue-tsc -b && vite build","test":"vitest run"},"dependencies":{"@vitejs/plugin-vue":"latest","vite":"latest","vue":"latest","vue-tsc":"latest","typescript":"latest","vitest":"latest"},"devDependencies":{}}
