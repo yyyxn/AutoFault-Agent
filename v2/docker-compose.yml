@@ -1,0 +1,9 @@
+services:
+  api:
+    build: .
+    ports:
+      - "38081:38081"
+    volumes:
+      - runtime-state:/app/runtime_state
+volumes:
+  runtime-state:
