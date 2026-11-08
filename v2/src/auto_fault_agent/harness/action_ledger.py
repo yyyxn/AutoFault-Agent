@@ -17,6 +17,10 @@ def canonical_json(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
+class LogicalActionScopeConflict(RuntimeError):
+    """A globally unique logical action ID was presented in another scope."""
+
+
 class ActionLedger:
     """Small transactional ledger for logical actions and their attempts."""
 
@@ -92,6 +96,17 @@ class ActionLedger:
         now = utc_now()
         with self._connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            existing = db.execute(
+                "SELECT * FROM logical_actions WHERE logical_action_id=?", (logical_action_id,)
+            ).fetchone()
+            if existing and (existing["session_id"] != session_id or existing["task_id"] != task_id):
+                db.rollback()
+                raise LogicalActionScopeConflict(
+                    "logical_action_id already belongs to another session/task"
+                )
+            if existing and existing["idempotency_key"] != idempotency_key:
+                db.rollback()
+                raise RuntimeError("logical_action_id reused with a different idempotency key")
             db.execute(
                 """INSERT OR IGNORE INTO logical_actions
                 (logical_action_id,session_id,task_id,tool_name,arguments_json,arguments_hash,
@@ -105,6 +120,8 @@ class ActionLedger:
                 (session_id, task_id, idempotency_key),
             ).fetchone()
             db.commit()
+        if row is None or row["logical_action_id"] != logical_action_id:
+            raise RuntimeError("idempotency key reused for a different logical action")
         if row["tool_name"] != tool_name or row["arguments_hash"] != arguments_hash:
             raise RuntimeError("idempotency key reused for a different logical action")
         return dict(row)
@@ -112,6 +129,16 @@ class ActionLedger:
     def get_action(self, logical_action_id):
         with self._connect() as db:
             row = db.execute("SELECT * FROM logical_actions WHERE logical_action_id=?", (logical_action_id,)).fetchone()
+        return dict(row) if row else None
+
+    def get_action_by_idempotency_key(self, session_id, task_id, idempotency_key):
+        """Resolve one logical action within its session/task idempotency scope."""
+        with self._connect() as db:
+            row = db.execute(
+                """SELECT * FROM logical_actions
+                WHERE session_id=? AND task_id=? AND idempotency_key=?""",
+                (session_id, task_id, idempotency_key),
+            ).fetchone()
         return dict(row) if row else None
 
     def list_actions(self, session_id, task_id=None):
@@ -161,7 +188,7 @@ class ActionLedger:
             )
             db.execute(
                 """UPDATE logical_actions SET action_status=?, result_json=?, error_json=?, updated_at=?
-                WHERE logical_action_id=?""",
+                WHERE logical_action_id=? AND action_status NOT IN ('SUCCEEDED','FAILED')""",
                 (action_status, canonical_json(result) if result is not None else None,
                  canonical_json(error) if error is not None else None, now, logical_action_id),
             )

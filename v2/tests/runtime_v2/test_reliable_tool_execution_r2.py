@@ -159,9 +159,10 @@ def test_timeout_then_late_success_reconciles_without_second_execution(tmp_path)
     harness = AgentHarness(dispatcher, tmp_path, config(timeout=0.01))
     context = harness.new_context("s", "t")
     unknown = harness.execute("inject_fault", {"fault_id": "F001"}, context)
+    logical_action_id = context.current_logical_action_id
     gate.set()
     assert dispatcher.finished.wait(1)
-    recovered = harness.execute("inject_fault", {"fault_id": "F001"}, context)
+    recovered = harness.execute("inject_fault", {"fault_id": "F001"}, context, logical_action_id=logical_action_id)
     assert unknown.error["type"] == "OutcomeUnknown"
     assert recovered.success
     assert dispatcher.calls == dispatcher.dut.side_effects == 1
@@ -174,9 +175,10 @@ def test_timeout_then_late_explicit_failure_is_reconciled_failed(tmp_path):
     harness = AgentHarness(dispatcher, tmp_path, config(timeout=0.01, retries=0))
     context = harness.new_context("s", "t")
     harness.execute("inject_fault", {"fault_id": "F001"}, context)
+    logical_action_id = context.current_logical_action_id
     gate.set()
     assert dispatcher.finished.wait(1)
-    result = harness.execute("inject_fault", {"fault_id": "F001"}, context)
+    result = harness.execute("inject_fault", {"fault_id": "F001"}, context, logical_action_id=logical_action_id)
     assert not result.success
     assert dispatcher.calls == 1
     assert harness.ledger.list_actions("s", "t")[0]["action_status"] == "FAILED"
@@ -188,7 +190,7 @@ def test_unknown_without_query_or_state_evidence_remains_unknown(tmp_path):
     harness = AgentHarness(dispatcher, tmp_path, config(timeout=0.01))
     context = harness.new_context("s", "t")
     result = harness.execute("inject_fault", {"fault_id": "F001"}, context)
-    again = harness.execute("inject_fault", {"fault_id": "F001"}, context)
+    again = harness.execute("inject_fault", {"fault_id": "F001"}, context, logical_action_id=context.current_logical_action_id)
     assert result.error["type"] == again.error["type"] == "OutcomeUnknown"
     assert dispatcher.calls == 1
     gate.set()
@@ -203,9 +205,9 @@ def test_concurrent_same_idempotency_key_executes_once(tmp_path):
     c1 = first.new_context("s", "t")
     c2 = second.new_context("s", "t")
     with ThreadPoolExecutor(max_workers=2) as pool:
-        f1 = pool.submit(first.execute, "inject_fault", {"fault_id": "F001"}, c1)
+        f1 = pool.submit(first.execute, "inject_fault", {"fault_id": "F001"}, c1, logical_action_id="concurrent-action")
         assert dispatcher.started.wait(1)
-        f2 = pool.submit(second.execute, "inject_fault", {"fault_id": "F001"}, c2)
+        f2 = pool.submit(second.execute, "inject_fault", {"fault_id": "F001"}, c2, logical_action_id="concurrent-action")
         gate.set()
         r1, r2 = f1.result(), f2.result()
     assert dispatcher.calls == dispatcher.dut.side_effects == 1
@@ -305,9 +307,9 @@ def test_two_workers_compete_for_one_logical_action_without_duplicate(tmp_path):
     h2 = AgentHarness(dispatcher, tmp_path, config(timeout=1))
     c1, c2 = h1.new_context("s", "t"), h2.new_context("s", "t")
     with ThreadPoolExecutor(max_workers=2) as pool:
-        f1 = pool.submit(h1.execute, "inject_fault", {"fault_id": "F001"}, c1)
+        f1 = pool.submit(h1.execute, "inject_fault", {"fault_id": "F001"}, c1, logical_action_id="worker-action")
         assert dispatcher.started.wait(1)
-        r2 = h2.execute("inject_fault", {"fault_id": "F001"}, c2)
+        r2 = h2.execute("inject_fault", {"fault_id": "F001"}, c2, logical_action_id="worker-action")
         gate.set()
         r1 = f1.result()
     assert dispatcher.calls == 1

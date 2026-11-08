@@ -1,10 +1,10 @@
 from __future__ import annotations
-import hashlib,json,re,time,uuid
+import json,re,time,uuid
 from concurrent.futures import ThreadPoolExecutor,TimeoutError as FutureTimeout
 from datetime import datetime,timezone
 from pathlib import Path
 from ..schemas import ToolResult
-from .action_ledger import ActionLedger,canonical_json
+from .action_ledger import ActionLedger
 from .checkpoint import CheckpointStore
 from .config import HarnessConfig
 from .context import ExecutionContext
@@ -66,13 +66,11 @@ class AgentHarness:
         if self.config.enable_step_limit and context.step_count>=self.config.max_steps:return self._failure(name,{"type":"StepLimitExceeded","message":f"Maximum {self.config.max_steps} steps exceeded"},context,args)
         validation=self.validate(name,args)
         if validation:return self._failure(name,validation,context,args)
-        if logical_action_id is None:
-            current=self.ledger.get_action(context.current_logical_action_id) if context.current_logical_action_id else None
-            same_unknown=bool(current and current["action_status"] in {"EXECUTING","OUTCOME_UNKNOWN","FAILED"} and current["tool_name"]==name and current["arguments_json"]==canonical_json(args))
-            if same_unknown:logical_action_id=current["logical_action_id"]
-            else:
-                raw=f"{context.session_id}\0{context.task_id}\0{context.step_count+1}\0{name}\0{canonical_json(args)}"
-                logical_action_id="act_"+hashlib.sha256(raw.encode()).hexdigest()[:24]
+        if logical_action_id is None and idempotency_key is not None:
+            current=self.ledger.get_action_by_idempotency_key(context.session_id,context.task_id,idempotency_key)
+            if current is None:raise KeyError("idempotency key does not identify an existing logical action")
+            logical_action_id=current["logical_action_id"]
+        if logical_action_id is None:logical_action_id=f"act_{uuid.uuid4().hex}"
         action=self.ledger.get_or_create_action(context.session_id,context.task_id,name,args,logical_action_id=logical_action_id,idempotency_key=idempotency_key)
         context.current_logical_action_id=action["logical_action_id"];context.current_operation_id=action["operation_id"];context.current_idempotency_key=action["idempotency_key"]
         self.metrics["logical_actions"]=len(self.ledger.list_actions(context.session_id,context.task_id))
@@ -134,12 +132,20 @@ class AgentHarness:
     def resume(self,session_id):
         path=self.store.latest(session_id)
         if not path:raise FileNotFoundError(f"No checkpoint for {session_id}")
-        payload=self.store.read(path);checkpoint_action=(payload.get("ledger") or {}).get("logical_action")
+        payload=self.store.read(path);checkpoint_action=(payload.get("ledger") or {}).get("logical_action");forward_terminal=False
         if checkpoint_action:
             current=self.ledger.get_action(checkpoint_action["logical_action_id"])
-            if current and current["action_status"]!=checkpoint_action["action_status"]:raise RuntimeError("checkpoint and ledger action status mismatch")
-        self.ledger.recover_incomplete(session_id);self.last_checkpoint=path;context=self.store.load(path,self.dispatcher.dut)
+            if not current:raise RuntimeError("checkpoint logical action is missing from ledger")
+            checkpoint_context=payload.get("context") or {}
+            if current["session_id"]!=checkpoint_context.get("session_id") or current["task_id"]!=checkpoint_context.get("task_id"):raise RuntimeError("checkpoint logical action scope mismatch")
+            checkpoint_status=checkpoint_action["action_status"];ledger_status=current["action_status"]
+            forward_terminal=checkpoint_status=="OUTCOME_UNKNOWN" and ledger_status in {"SUCCEEDED","FAILED"}
+            compatible=checkpoint_status==ledger_status or (checkpoint_status=="OUTCOME_UNKNOWN" and ledger_status in {"EXECUTING","SUCCEEDED","FAILED"})
+            if not compatible:raise RuntimeError("checkpoint and ledger action status mismatch")
+        self.ledger.recover_incomplete(session_id);self.last_checkpoint=path;context=self.store.load(path,self.dispatcher.dut,restore_dut=not forward_terminal)
         if context.current_logical_action_id:
             action=self.ledger.get_action(context.current_logical_action_id)
             if action and action["action_status"]=="OUTCOME_UNKNOWN":self.reconcile(action["logical_action_id"],context)
+            elif action and action["action_status"]=="SUCCEEDED":
+                result=self._stored_result(action);self._sync_authoritative_state(action["tool_name"],result,context);context.last_reliable_observation=result.model_dump()
         return context

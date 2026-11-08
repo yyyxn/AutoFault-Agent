@@ -37,8 +37,9 @@ class CheckpointStore:
     def latest(self,session_id):
         files=sorted(self.root.glob(f"{session_id}_*_step_*.json"))
         return files[-1] if files else None
-    def load(self,path,dut):
-        payload=self.read(path); dut.restore(payload["dut"])
+    def load(self,path,dut,*,restore_dut=True):
+        payload=self.read(path)
+        if restore_dut:dut.restore(payload["dut"])
         return ExecutionContext.model_validate(payload["context"])
     def arbitrate(self,path,progress_store,*,session_id=None,task_id=None):
         payload=None

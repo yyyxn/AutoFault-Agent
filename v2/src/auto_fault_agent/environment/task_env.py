@@ -1,4 +1,5 @@
 from __future__ import annotations
+import uuid
 from typing import Any,Literal
 from pydantic import BaseModel,Field
 from .lifecycle import TaskLifecycle,TaskLifecycleState
@@ -27,13 +28,17 @@ class TaskEnvironment:
         if self.done: raise RuntimeError("Task environment is already done")
         if self.lifecycle.state!=TaskLifecycleState.RUNNING: raise RuntimeError(f"Task is not ready for a tool call: {self.lifecycle.state.value}")
         name=action.get("tool_name"); args=dict(action.get("arguments",{}))
+        logical_action_id=action.get("logical_action_id") or f"act_{uuid.uuid4().hex}"
+        if not isinstance(logical_action_id,str) or not logical_action_id:raise ValueError("logical_action_id must be a non-empty string")
         self.lifecycle.transition(TaskLifecycleState.WAITING_TOOL,f"tool_requested:{name}")
         if self.context:self.context.task_lifecycle_state=self.lifecycle.state.value
-        try: result=self.harness.execute(name,args,self.context) if self.harness else self.dispatcher.dispatch(name,args)
+        try: result=self.harness.execute(name,args,self.context,logical_action_id=logical_action_id) if self.harness else self.dispatcher.dispatch(name,args)
         except Exception:
             self.lifecycle.transition(TaskLifecycleState.FAILED_INTERNAL,f"tool_dispatch_exception:{name}")
             raise
-        observation=result.model_dump(); self.actions.append({"tool_name":name,"arguments":args,"observation":observation}); self.last_observation=observation
+        observation=result.model_dump();observation["logical_action_id"]=logical_action_id
+        if self.context:observation["operation_id"]=self.context.current_operation_id
+        self.actions.append({"logical_action_id":logical_action_id,"operation_id":observation.get("operation_id"),"tool_name":name,"arguments":args,"observation":observation}); self.last_observation=observation
         self.lifecycle.transition(TaskLifecycleState.RUNNING,f"tool_observed:{name}:{'success' if result.success else 'failure'}")
         if self.context:self.context.task_lifecycle_state=self.lifecycle.state.value
         return observation
